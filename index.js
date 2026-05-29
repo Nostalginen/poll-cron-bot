@@ -12,7 +12,7 @@ const TIMEZONE = "Europe/Helsinki";
 
 const STATE_FILE = path.join(__dirname, 'data', 'poll_state.json');
 
-const pollQuestion = "Pääsetkö treeneihin tänään?";
+const pollQuestion = "Tuletko treeneihin tänään?";
 const pollOptions = [
     { id: 'kylla', name: 'Kyllä, tulen!', emoji: '✅' },
     { id: 'kyyti_tarjoan', name: 'Tulen ja voin ottaa kyytiin', emoji: '🚙' },
@@ -59,7 +59,7 @@ function createPollEmbed(votes) {
     const embed = new EmbedBuilder()
         .setTitle(pollQuestion)
         .setColor('#2b2d31') // Discord dark theme grey background color
-        .setDescription('Äänestä klikkaamalla alla olevia painikkeita.\n\n*Äänestys on täysin anonyymi (kukaan ei näe kuka äänesti mitäkin).*')
+        .setDescription('Äänestä klikkaamalla alla olevia painikkeita.\n\n*Äänestys on täysin anonyymi (kukaan ei näe kuka äänesti mitäkin).*' )
         .setTimestamp();
 
     pollOptions.forEach(option => {
@@ -124,12 +124,11 @@ async function sendNewPoll() {
 client.once('ready', () => {
     console.log(`Bot is online! Logged in as: ${client.user.tag}`);
 
-    // 👇 ADD THIS LINE TEMPORARILY TO TEST IMMEDIATELY ON STARTUP
-    sendNewPoll();
+    //sendNewPoll();
 
     // Cron syntax: minute hour day-of-month month day-of-week
     // Days: 1=Mon, 2=Tue, 4=Thu, 5=Fri, 6=Sat
-    cron.schedule('0 8 * * 1,2,4,5,6', async () => {
+    cron.schedule('*/3 * * * *', async () => {
         console.log('Posting scheduled poll...');
         try {
             const channel = await client.channels.fetch(CHANNEL_ID);
@@ -162,7 +161,7 @@ client.once('ready', () => {
     });
 
     // Delete Poll Cron Job: Every single day at midnight (00:00)
-    cron.schedule('0 0 * * *', async () => {
+    cron.schedule('*/2 * * * *', async () => {
         console.log('Midnight reached, checking for active polls to delete...');
         const state = loadState();
         if (state.activePollMessageId && state.channelId) {
