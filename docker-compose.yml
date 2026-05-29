@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  discord-poll-bot:
+    build: .
+    container_name: discord_poll_bot
+    restart: unless-stopped
+    environment:
+      # Pass your secrets here instead of a .env file
+      - DISCORD_TOKEN=your_bot_token_here
+      - CHANNEL_ID=your_channel_id_here
+    volumes:
+      # This maps a local 'bot_data' folder to the container's 'data' folder.
+      # This ensures poll_state.json is saved permanently on your Ubuntu server.
+      - ./bot_data:/usr/src/app/data
