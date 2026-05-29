@@ -132,15 +132,13 @@ async function deleteActivePoll() {
 // Apufunktio: Onko nyt sallittu aika luoda polli (Ma, Ti, To, Pe, La ja klo >= 08:00)
 function shouldPollBeActiveRightNow() {
     const now = new Date();
-    const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone: TIMEZONE,
-        hour: 'numeric',
-        hour12: false,
-        weekday: 'short'
-    }).formatToParts(now);
+    
+    // Haetaan Helsingin aika selkeinä merkkijonoina ilman riskiä AM/PM sekaannuksista
+    const day = now.toLocaleString('en-US', { timeZone: TIMEZONE, weekday: 'short' }); // Mon, Tue...
+    const hourStr = now.toLocaleString('en-US', { timeZone: TIMEZONE, hour: 'numeric', hourCycle: 'h23' });
+    const hour = parseInt(hourStr, 10);
 
-    const hour = parseInt(parts.find(p => p.type === 'hour').value, 10);
-    const day = parts.find(p => p.type === 'weekday').value; // Mon, Tue, Thu, Fri, Sat, Sun, Wed
+    console.log(`Botin sisäinen tarkistus -> Päivä: ${day}, Tunti: ${hour}`);
 
     const allowedDays = ['Mon', 'Tue', 'Thu', 'Fri', 'Sat'];
     return allowedDays.includes(day) && hour >= 8;
@@ -179,13 +177,13 @@ client.once('ready', () => {
     });
 });
 
-// Äänestyspainikkeiden käsittely (Pysyy samana)
 client.on('interactionCreate', async interaction => {
     if (!interaction.isButton()) return;
     if (!interaction.customId.startsWith('poll_')) return;
 
     const state = loadState();
 
+    // Estetään vanhojen kyselyjen klikkailu
     if (interaction.message.id !== state.activePollMessageId) {
         return interaction.reply({ content: 'Tämä äänestys on jo päättynyt tai poistettu.', ephemeral: true });
     }
@@ -193,9 +191,19 @@ client.on('interactionCreate', async interaction => {
     const optionId = interaction.customId.replace('poll_', '');
     const userId = interaction.user.id;
 
+    // Lisätään tai poistetaan ääni muistista
+    if (state.votes[userId] === optionId) {
+        delete state.votes[userId];
+    } else {
+        state.votes[userId] = optionId;
+    }
+
+    // Tallennetaan tila JSON-tiedostoon
     saveState(state);
+
+    // Päivitetään pelkkä upotus (embed) reaaliajassa.
+    // Tämä komento riittää kuittaamaan napin painalluksen Discordille, eikä "Lataa viestiä..." -rulla jää pyörimään.
     await interaction.update({ embeds: [createPollEmbed(state.votes)] });
-    
 });
 
 client.login(TOKEN);
