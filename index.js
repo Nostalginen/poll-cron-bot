@@ -7,7 +7,7 @@ require('dotenv').config();
 const TOKEN = process.env.DISCORD_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
 
-// Aikavyöhykeasetus
+
 const TIMEZONE = "Europe/Helsinki"; 
 const STATE_FILE = path.join(__dirname, 'data', 'poll_state.json');
 
@@ -24,6 +24,7 @@ const client = new Client({
         GatewayIntentBits.GuildMessages
     ]
 });
+
 
 function loadState() {
     if (fs.existsSync(STATE_FILE)) {
@@ -72,6 +73,47 @@ function createPollEmbed(votes) {
     return embed;
 }
 
+function saveResultsToHistory(state) {
+    const historyFile = path.join(__dirname, 'data', 'poll_history.xml');
+    
+    // Lasketaan äänet
+    const counts = { kylla: 0, kyyti_tarjoan: 0, kyyti_tarve: 0 };
+    Object.values(state.votes).forEach(optionId => {
+        if (counts[optionId] !== undefined) counts[optionId]++;
+    });
+    const totalVotes = Object.keys(state.votes).length;
+    
+    // Haetaan oikea päivämäärä (vähennetään 5 min, jotta pysytään kyselypäivän puolella klo 00:00)
+    const date = new Date();
+    date.setMinutes(date.getMinutes() - 5);
+    // 'sv-SE' tuottaa kätevän standardin YYYY-MM-DD muodon XML:ää varten
+    const formattedDate = date.toLocaleDateString('sv-SE', { timeZone: TIMEZONE }); 
+
+    // Jos tiedostoa ei ole olemassa, luodaan sille XML-perusrakenne
+    if (!fs.existsSync(historyFile)) {
+        const initialXml = `<?xml version="1.0" encoding="UTF-8"?>\n<history>\n</history>`;
+        fs.writeFileSync(historyFile, initialXml, 'utf8');
+    }
+
+    // Luodaan uusi XML-elementti tämän päivän tuloksista
+    const pollXml = `  <poll date="${formattedDate}">\n` +
+                    `    <question>${pollQuestion}</question>\n` +
+                    `    <totalVotes>${totalVotes}</totalVotes>\n` +
+                    `    <results>\n` +
+                    `      <option id="kylla" count="${counts.kylla}">Kyllä, tulen!</option>\n` +
+                    `      <option id="kyyti_tarjoan" count="${counts.kyyti_tarjoan}">Tulen ja voin ottaa kyytiin</option>\n` +
+                    `      <option id="kyyti_tarve" count="${counts.kyyti_tarve}">Tulen, mutta tarvitsen kyydin</option>\n` +
+                    `    </results>\n` +
+                    `  </poll>\n</history>`;
+
+    // Luetaan nykyinen tiedosto ja korvataan lopetus-tagi uudella datalla (pysyy validina XML:nä)
+    let fileContent = fs.readFileSync(historyFile, 'utf8');
+    fileContent = fileContent.replace('</history>', pollXml);
+    
+    fs.writeFileSync(historyFile, fileContent, 'utf8');
+    console.log('Kyselyn tulokset tallennettu XML-historiaan.');
+}
+
 function createPollButtons() {
     const row = new ActionRowBuilder();
     pollOptions.forEach(option => {
@@ -108,8 +150,16 @@ async function sendNewPoll() {
 
 // Funktio vanhan pollin poistamiseen
 async function deleteActivePoll() {
+
     console.log('Tarkistetaan poistettavaa kyselyä...');
     const state = loadState();
+
+    try {
+            saveResultsToHistory(state);
+        } catch (historyError) {
+            console.error('Virhe historian tallentamisessa:', historyError);
+        }
+
     if (state.activePollMessageId && state.channelId) {
         try {
             const channel = await client.channels.fetch(state.channelId);
