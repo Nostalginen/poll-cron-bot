@@ -101,42 +101,48 @@ function createPollButtons() {
     return [row];
 }
 
+// --- MOVE THIS FUNCTION JUST ABOVE CLIENT.ONCE('READY') ---
+async function sendNewPoll() {
+    console.log('Triggering poll...');
+    try {
+        const channel = await client.channels.fetch(CHANNEL_ID);
+        if (!channel) return console.error('Channel not found.');
+
+        const newState = { activePollMessageId: null, channelId: CHANNEL_ID, votes: {} };
+        const embed = createPollEmbed(newState.votes);
+        const components = createPollButtons();
+
+        const message = await channel.send({ embeds: [embed], components: components });
+        newState.activePollMessageId = message.id;
+        saveState(newState);
+        console.log('Poll posted successfully.');
+    } catch (error) {
+        console.error('Error sending poll:', error);
+    }
+}
+
 client.once('ready', () => {
     console.log(`Bot is online! Logged in as: ${client.user.tag}`);
 
-    // Cron syntax: minute hour day-of-month month day-of-week
-    // Days: 1=Mon, 2=Tue, 4=Thu, 5=Fri, 6=Sat
-    cron.schedule('0 8 * * 1,2,4,5,6', async () => {
-        console.log('Posting scheduled poll...');
-        try {
-            const channel = await client.channels.fetch(CHANNEL_ID);
-            if (!channel) return console.error('Channel not found.');
+    // 👇 ADD THIS LINE TEMPORARILY TO TEST IMMEDIATELY ON STARTUP
+    sendNewPoll(); 
 
-            // Clear previous votes and prepare a fresh state
-            const newState = {
-                activePollMessageId: null,
-                channelId: CHANNEL_ID,
-                votes: {}
-            };
-
-            const embed = createPollEmbed(newState.votes);
-            const components = createPollButtons();
-
-            const message = await channel.send({
-                embeds: [embed],
-                components: components
-            });
-
-            newState.activePollMessageId = message.id;
-            saveState(newState);
-            console.log('New poll posted successfully.');
-        } catch (error) {
-            console.error('Error sending scheduled poll:', error);
-        }
+    // Morning Cron Job
+    cron.schedule('0 8 * * 1,2,4,5,6', () => {
+        sendNewPoll();
     }, {
         scheduled: true,
         timezone: TIMEZONE
     });
+
+    // Midnight Cron Job (Leave this as it was)
+    cron.schedule('0 0 * * *', async () => {
+        // ... (rest of your midnight deletion code remains exactly the same)
+    }, {
+        scheduled: true,
+        timezone: TIMEZONE
+    });
+});
 
     // Delete Poll Cron Job: Every single day at midnight (00:00)
     cron.schedule('0 0 * * *', async () => {
