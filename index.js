@@ -11,11 +11,11 @@ const CHANNEL_ID = process.env.CHANNEL_ID;
 const TIMEZONE = "Europe/Helsinki"; 
 const STATE_FILE = path.join(__dirname, 'data', 'poll_state.json');
 
-const pollQuestion = "Tuletko treeneihin tänään?";
+const pollQuestion = "Tuletko treeneihin tänään? | Are you coming to practice today?";
 const pollOptions = [
-    { id: 'kylla', name: 'Kyllä, tulen!', emoji: '✅' },
-    { id: 'kyyti_tarjoan', name: 'Tulen ja voin ottaa kyytiin', emoji: '🚙' },
-    { id: 'kyyti_tarve', name: 'Tulen, mutta tarvitsen kyydin', emoji: '🙋' }
+   { id: 'kylla', name: 'Kyllä | Yes', emoji: '✅' },
+   { id: 'kyyti_tarjoan', name: 'Kyllä ja voin tarjota kyydin | Can drive', emoji: '🚙' },
+   { id: 'kyyti_tarve', name: 'Kyllä ja tarvitsen kyydin | Need a ride', emoji: '🙋' }
 ];
 
 const client = new Client({
@@ -51,7 +51,8 @@ function createPollEmbed(votes) {
     const embed = new EmbedBuilder()
         .setTitle(pollQuestion)
         .setColor('#2b2d31')
-        .setDescription('Äänestä klikkaamalla alla olevia painikkeita.\n\n*Äänestys on täysin anonyymi (kukaan ei näe kuka äänesti mitäkin).*')
+        .setDescription('Äänestä klikkaamalla alla olevia painikkeita.\n*Äänestys on täysin anonyymi.*\n\n' +
+                        'Vote by clicking the buttons below.\n*The poll is completely anonymous.*')
         .setTimestamp();
 
     pollOptions.forEach(option => {
@@ -69,7 +70,7 @@ function createPollEmbed(votes) {
         });
     });
 
-    embed.setFooter({ text: `Yhteensä äänestäjiä: ${totalVotes}` });
+    embed.setFooter({ text: `Yhteensä äänestäjiä / Total voters: ${totalVotes}` });
     return embed;
 }
 
