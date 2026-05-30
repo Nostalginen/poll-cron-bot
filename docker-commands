@@ -1,0 +1,13 @@
+päivitys
+sudo docker compose pull && sudo docker compose up -d --force-recreate
+
+sudo docker compose pull discord-poll-bot && sudo docker compose up -d --force-recreate
+
+historia xml
+sudo docker exec -it discord_poll_bot cat data/poll_history.xml
+
+Tämänhetkinen äänestys
+sudo docker exec -it discord_poll_bot cat data/poll_state.json
+
+Poista tämänhetkinen äänestys
+sudo docker exec -it discord_poll_bot rm -f data/poll_state.json
