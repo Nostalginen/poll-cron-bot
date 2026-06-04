@@ -48,12 +48,34 @@ function createPollEmbed(votes) {
     });
 
     const totalVotes = Object.keys(votes).length;
+
+    // 1. Haetaan tämän päivän viikonpäivä Helsingin ajassa
+    const helsinkiTime = new Date().toLocaleString("en-US", { timeZone: TIMEZONE });
+    const localDate = new Date(helsinkiTime);
+    const dayOfWeek = localDate.getDay(); // 0=Su, 1=Ma, 2=Ti, 3=Ke, 4=To, 5=Pe, 6=La
+
+    // 2. Määritetään treeniaika päivän mukaan
+    let timeStr = "";
+    if (dayOfWeek === 1 || dayOfWeek === 2) {
+        timeStr = "19:00 - 21:00";
+    } else if (dayOfWeek === 4 || dayOfWeek === 5) {
+        timeStr = "18:00 - 20:00";
+    } else if (dayOfWeek === 6) {
+        timeStr = "15:15 - 17:00";
+    }
+
     const embed = new EmbedBuilder()
         .setTitle(pollQuestion)
         .setColor('#2b2d31')
         .setDescription('Äänestä klikkaamalla alla olevia painikkeita.\n*Äänestys on täysin anonyymi.*\n\n' +
                         'Vote by clicking the buttons below.\n*The poll is completely anonymous.*')
         .setTimestamp();
+
+    // 3. LISÄTÄÄN KELLONAIKA OTSIKON YLÄPUOLELLE (Author-kenttä)
+    if (timeStr) {
+        embed.setAuthor({ name: `⏱️ Treeniaika / Practice time: ${timeStr}` });
+    }
+
 
     pollOptions.forEach(option => {
         const count = counts[option.id];
