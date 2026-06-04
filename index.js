@@ -68,12 +68,12 @@ function createPollEmbed(votes) {
         .setTitle(pollQuestion)
         .setColor('#2b2d31')
         .setDescription('Äänestä klikkaamalla alla olevia painikkeita.\n*Äänestys on täysin anonyymi.*\n\n' +
-                        'Vote by clicking the buttons below.\n*The poll is completely anonymous.*')
+                        'Vote by clicking the buttons below.\n*The poll is completely anonymous.*\n\n')
         .setTimestamp();
 
     // 3. LISÄTÄÄN KELLONAIKA OTSIKON YLÄPUOLELLE (Author-kenttä)
     if (timeStr) {
-        embed.setAuthor({ name: `⏱️ Treeniaika / Practice time: ${timeStr}` });
+        embed.setAuthor({ name: `⏱️ Treeniaika | Practice time: ${timeStr}` });
     }
 
 
@@ -92,7 +92,7 @@ function createPollEmbed(votes) {
         });
     });
 
-    embed.setFooter({ text: `Yhteensä äänestäjiä / Total voters: ${totalVotes}` });
+    embed.setFooter({ text: `Yhteensä äänestäjiä | Total voters: ${totalVotes}` });
     return embed;
 }
 
