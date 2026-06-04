@@ -14,8 +14,8 @@ const STATE_FILE = path.join(__dirname, 'data', 'poll_state.json');
 const pollQuestion = "Tuletko treeneihin tänään? | Are you coming to practice today?";
 const pollOptions = [
    { id: 'kylla', name: 'Kyllä | Yes', emoji: '✅' },
-   { id: 'kyyti_tarjoan', name: 'Kyllä ja voin tarjota kyydin | Can drive', emoji: '🚙' },
-   { id: 'kyyti_tarve', name: 'Kyllä ja tarvitsen kyydin | Need a ride', emoji: '🙋' }
+   { id: 'kyyti_tarjoan', name: 'Kyllä, voin kyyditä | Yes, can carpool', emoji: '🚙' },
+   { id: 'kyyti_tarve', name: 'Kyllä, tarvin kyydin | Yes, need a ride', emoji: '🙋' }
 ];
 
 const client = new Client({
