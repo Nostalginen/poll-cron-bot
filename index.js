@@ -1,3 +1,4 @@
+import { isTodaySkipped } from './skipped-days';
 const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const cron = require('node-cron');
 const fs = require('fs');
@@ -153,6 +154,10 @@ function createPollButtons() {
 
 // Funktio uuden pollin luomiseen
 async function sendNewPoll() {
+    if (isTodaySkipped()) {
+        console.log('Tämän päivän treenit on merkitty skipatuksi listalla. Kyselyä ei luoda.');
+        return;
+    }
     console.log('Luodaan uusi päivän kysely...');
     try {
         const channel = await client.channels.fetch(CHANNEL_ID);
@@ -204,6 +209,10 @@ async function deleteActivePoll() {
 
 // Apufunktio: Onko nyt sallittu aika luoda polli (Ma, Ti, To, Pe, La ja klo >= 08:00)
 function shouldPollBeActiveRightNow() {
+    if (isTodaySkipped()) {
+        console.log('Käynnistystarkistus: Päivä löytyy SKIPPED_DATES-listalta, ei luoda kyselyä.');
+        return false;
+    }
     const now = new Date();
     
     // Haetaan Helsingin aika selkeinä merkkijonoina ilman riskiä AM/PM sekaannuksista
