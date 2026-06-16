@@ -1,4 +1,4 @@
-import { isTodaySkipped } from './skipped-days';
+const { SKIPPED_DATES, isTodaySkipped } = require('./skippedDates.js');
 const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const cron = require('node-cron');
 const fs = require('fs');
