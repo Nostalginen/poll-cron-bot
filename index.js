@@ -154,7 +154,7 @@ function createPollButtons() {
 
 // Funktio uuden pollin luomiseen
 async function sendNewPoll() {
-    if (isTodaySkipped()) {
+    if (isTodaySkipped(TIMEZONE)) {
         console.log('Tämän päivän treenit on merkitty skipatuksi listalla. Kyselyä ei luoda.');
         return;
     }
@@ -209,7 +209,7 @@ async function deleteActivePoll() {
 
 // Apufunktio: Onko nyt sallittu aika luoda polli (Ma, Ti, To, Pe, La ja klo >= 08:00)
 function shouldPollBeActiveRightNow() {
-    if (isTodaySkipped()) {
+    if (isTodaySkipped(TIMEZONE)) {
         console.log('Käynnistystarkistus: Päivä löytyy SKIPPED_DATES-listalta, ei luoda kyselyä.');
         return false;
     }
